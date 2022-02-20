@@ -1,8 +1,9 @@
 import os
 import typing
+from glob import glob
 
-from parse_input import *
-from write_output import *
+from parse_input import parse_input_file, Client
+from write_output import write_output_file, zip_source
 
 
 def optimize(clients, ingredients):
@@ -13,7 +14,7 @@ def optimize(clients, ingredients):
     wl, wd = 1, 1  # Weight given to likes / dislikes
 
     for ing, (nl, nd) in ingredients.items():
-        scores.append((ing, (nl*wl - nd*wd)))
+        scores.append((ing, (nl*wl - nd*wd) * int(nd != 0)))
         # Always add ingredients with no dislikes
         if nd == 0:
             out.add(ing)
@@ -53,9 +54,9 @@ def run_one_problem(path):
 
 # Main entrypoint - execution starts here after definitions are made
 if __name__ == '__main__':
-    input_files = os.scandir(r'practice/inp')
+    input_files = glob(r'practice/inp/*.txt')
 
     for f in input_files:
-        run_one_problem(f.path)
+        run_one_problem(f)
 
     zip_source('practice')
