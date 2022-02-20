@@ -1,4 +1,6 @@
 import os
+import sys
+import io
 import typing
 from glob import glob
 
@@ -9,35 +11,46 @@ from write_output import write_output_file, zip_source
 def optimize(clients, ingredients):
     """ Return list of ingredients to go on pizza. """
 
-    out = set()
-    scores = []  # Some function of likes / dislikes for each ingredient
+    out = list()
+    scores = list()  # Some function of likes / dislikes for each ingredient
     wl, wd = 1, 1  # Weight given to likes / dislikes
 
     for ing, (nl, nd) in ingredients.items():
         score = (nl*wl - nd*wd)  # sum of likes, minus sum of dislikes
         if nd == 0:
             # Always add ingredients with no dislikes, and sort to back of the list
-            out.add(ing)
+            out.append(ing)
             score *= -len(clients)
         scores.append((ing, score))
 
     # Sort ingredients by popularity score
     scores = sorted(scores, key=lambda s: s[1], reverse=True)
+    sorted_ings = [i for i, s in scores]
 
-    prev_score = scores[0][1]
-    out.add(scores[0][0])
-    for ing, score in scores[1:]:
-        if score != prev_score:
-            break
-        out.add(ing)
-        prev_score = score
+    # Optimise toppings
+    test = out
+    prev_total = 0
+    lower = len(scores) - len(out)
+    prev_lower = lower * 2
+    diff = (prev_lower - lower) / 2
+    while abs(diff) > 2:
+        test = out + sorted_ings[0: int(lower)]
+        total = evalutate_clients(test, clients)
+        diff = (prev_lower - lower) / 2
+        prev_lower = lower
+        # TODO: check the previous section skipped over
+        if total >= prev_total:
+            lower -= diff
+        else:
+            lower += diff
+        prev_total = total
 
-    return out
+    return test
 
 
-def evalutate_clients(path, ingredients_choice, clients: typing.List[Client]):
-    print(f'Evaluating {path}')
-    ingredients_choice = list(ingredients_choice)
+def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], path='', do_print=False):
+    output = sys.stdout if do_print else io.StringIO()
+    print(f'Evaluating {path}', file=output)
 
     total = 0
     for cl in clients:
@@ -45,14 +58,16 @@ def evalutate_clients(path, ingredients_choice, clients: typing.List[Client]):
         dislikes_ok = all(i not in ingredients_choice for i in cl.dislikes)
         total += int(likes_ok) * int(dislikes_ok)
 
-    print(f'Ingredients ({len(ingredients_choice)}): {ingredients_choice[:10]} ...')
-    print(f'Happy clients: {total} / {len(clients)}')
+    print(f'Ingredients ({len(ingredients_choice)}): {ingredients_choice[:10]} ...', file=output)
+    print(f'Happy clients: {total} / {len(clients)}', file=output)
+
+    return total
 
 
 def run_one_problem(path):
     clients, ingredients = parse_input_file(path)
     out = optimize(clients, ingredients)
-    evalutate_clients(path, out, clients)
+    evalutate_clients(out, clients, path, True)
     write_output_file(out, os.path.basename(path))
 
 
