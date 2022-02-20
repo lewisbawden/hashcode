@@ -14,10 +14,12 @@ def optimize(clients, ingredients):
     wl, wd = 1, 1  # Weight given to likes / dislikes
 
     for ing, (nl, nd) in ingredients.items():
-        scores.append((ing, (nl*wl - nd*wd) * int(nd != 0)))
-        # Always add ingredients with no dislikes
+        score = (nl*wl - nd*wd)  # sum of likes, minus sum of dislikes
         if nd == 0:
+            # Always add ingredients with no dislikes, and sort to back of the list
             out.add(ing)
+            score *= -len(clients)
+        scores.append((ing, score))
 
     # Sort ingredients by popularity score
     scores = sorted(scores, key=lambda s: s[1], reverse=True)
@@ -35,13 +37,15 @@ def optimize(clients, ingredients):
 
 def evalutate_clients(path, ingredients_choice, clients: typing.List[Client]):
     print(f'Evaluating {path}')
+    ingredients_choice = list(ingredients_choice)
 
     total = 0
     for cl in clients:
         likes_ok = all(i in ingredients_choice for i in cl.likes)
         dislikes_ok = all(i not in ingredients_choice for i in cl.dislikes)
         total += int(likes_ok) * int(dislikes_ok)
-    print(f'Ingredients: {list(ingredients_choice)[:10]} ...')
+
+    print(f'Ingredients ({len(ingredients_choice)}): {ingredients_choice[:10]} ...')
     print(f'Happy clients: {total} / {len(clients)}')
 
 
