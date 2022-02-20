@@ -28,7 +28,9 @@ def run_one_problem(path):
 
 # Main entrypoint - execution starts here after definitions are made
 if __name__ == '__main__':
-    input_files = os.scandir(r'../inp')
+    input_files = os.scandir(r'practice/inp')
 
     for f in input_files:
         run_one_problem(f.path)
+
+    zip_source('practice')
