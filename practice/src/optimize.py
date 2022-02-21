@@ -22,23 +22,23 @@ def optimize(clients, ingredients):
     scores = sorted(scores, key=lambda s: s[1], reverse=True)
     sorted_ings = [i for i, s in scores]
 
-    # Optimise toppings
+    # Optimise toppings: Binary search for best cut off of ingredients to take
+    # Start by taking all ingredients, then half - if it improves, subtract a quarter more ingredients, if not, add a quarter
+    # Initialise the default or first values
     test = out
     prev_total = 0
     lower = len(scores) - len(out)
     prev_lower = lower * 2
-    diff = (prev_lower - lower) / 2
+    diff = 1e99
     while abs(diff) > 2:
         test = out + sorted_ings[0: int(lower)]
         total = evalutate_clients(test, clients)
         diff = (prev_lower - lower) / 2
         prev_lower = lower
-        # TODO: check the section that is removed
-        #  (currently halves the section being added, then adds half the section removed if the score drops, or continues to remove half)
         if total >= prev_total:
             lower -= diff
         else:
-            lower += diff
+            lower += diff * 2
         prev_total = total
 
     # TODO: try same procedure on the other limit
