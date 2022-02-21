@@ -51,12 +51,10 @@ def optimize(clients, ingredients):
 
 
 def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], path='', do_print=False):
-    # TODO: parallelise by splitting into 4-8 chunks
     ing_set = set(ingredients_choice)
 
     total = 0
     for cl in clients:
-        # TODO: check if using 'sets' speeds this up instead of checking for items in a list
         likes_ok = len(cl.likes - ing_set) == 0
         dislikes_ok = len(ing_set.intersection(cl.dislikes)) == 0
         total += int(likes_ok) * int(dislikes_ok)
