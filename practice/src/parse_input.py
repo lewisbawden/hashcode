@@ -42,8 +42,8 @@ class Client:
     def __init__(self, n_likes, n_dislikes, likes, dislikes):
         self.n_likes = n_likes
         self.n_dislikes = n_dislikes
-        self.likes = likes
-        self.dislikes = dislikes
+        self.likes = set(likes)
+        self.dislikes = set(dislikes)
 
     def __repr__(self):
         return f'{self.__dict__}'
