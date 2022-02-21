@@ -1,5 +1,3 @@
-import sys
-import io
 import typing
 from parse_input import Client
 
@@ -53,10 +51,8 @@ def optimize(clients, ingredients):
 
 
 def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], path='', do_print=False):
-    output = sys.stdout if do_print else io.StringIO()
-    print(f'Evaluating {path}', file=output)
-
     # TODO: parallelise by splitting into 4-8 chunks
+
     total = 0
     for cl in clients:
         # TODO: check if using 'sets' speeds this up instead of checking for items in a list
@@ -64,7 +60,9 @@ def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], pa
         dislikes_ok = all(i not in ingredients_choice for i in cl.dislikes)
         total += int(likes_ok) * int(dislikes_ok)
 
-    print(f'Ingredients ({len(ingredients_choice)}): {ingredients_choice[:10]} ...', file=output)
-    print(f'Happy clients: {total} / {len(clients)}', file=output)
+    if do_print:
+        print(f'Evaluating {path}')
+        print(f'Ingredients ({len(ingredients_choice)}): {ingredients_choice[:10]} ...')
+        print(f'Happy clients: {total} / {len(clients)}')
 
     return total

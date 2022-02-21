@@ -14,7 +14,7 @@ def run_one_problem(path):
     out = optimize(clients, ingredients)
     evalutate_clients(out, clients, path, True)
     write_output_file(out, os.path.basename(path))
-    print(f'Elapsed Time: {time.time() - t0}')
+    print(f'Total Time: {time.time() - t0}')
 
 
 # Main entrypoint - execution starts here after definitions are made
