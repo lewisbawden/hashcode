@@ -1,6 +1,7 @@
 import os
 import sys
 import io
+import time
 import typing
 from glob import glob
 
@@ -8,11 +9,13 @@ from parse_input import parse_input_file, Client
 from write_output import write_output_file, zip_source
 
 
+#TODO: move to separate .py for clarity
 def optimize(clients, ingredients):
     """ Return list of ingredients to go on pizza. """
 
     out = list()
     scores = list()  # Some function of likes / dislikes for each ingredient
+    # TODO: see if applying -1 or 0 weight to each of these improves score on the difficult examples
     wl, wd = 1, 1  # Weight given to likes / dislikes
 
     for ing, (nl, nd) in ingredients.items():
@@ -38,12 +41,19 @@ def optimize(clients, ingredients):
         total = evalutate_clients(test, clients)
         diff = (prev_lower - lower) / 2
         prev_lower = lower
-        # TODO: check the previous section skipped over
+        # TODO: check the section that is removed
+        #  (currently halves the section being added, then adds half the section removed if the score drops, or continues to remove half)
         if total >= prev_total:
             lower -= diff
         else:
             lower += diff
         prev_total = total
+
+    # TODO: try same procedure on the other limit
+    #  (current limits are from [0: 'lower'], but it is assumed it is always best to take the most popular ingredients - that might not always be true)
+
+    # TODO: try one-by-one (or a smarter way) adding ingredients that where not added and/or removing ingredients that were added in the final topping choice
+    #  (instead of just taking a continuous set from [0: 'lower'])
 
     return test
 
@@ -52,8 +62,10 @@ def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], pa
     output = sys.stdout if do_print else io.StringIO()
     print(f'Evaluating {path}', file=output)
 
+    # TODO: parallelise by splitting into 4-8 chunks
     total = 0
     for cl in clients:
+        # TODO: check if using 'sets' speeds this up instead of checking for items in a list
         likes_ok = all(i in ingredients_choice for i in cl.likes)
         dislikes_ok = all(i not in ingredients_choice for i in cl.dislikes)
         total += int(likes_ok) * int(dislikes_ok)
@@ -65,10 +77,13 @@ def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], pa
 
 
 def run_one_problem(path):
+    print()
+    t0 = time.time()
     clients, ingredients = parse_input_file(path)
     out = optimize(clients, ingredients)
     evalutate_clients(out, clients, path, True)
     write_output_file(out, os.path.basename(path))
+    print(f'Elapsed Time: {time.time() - t0}')
 
 
 # Main entrypoint - execution starts here after definitions are made
