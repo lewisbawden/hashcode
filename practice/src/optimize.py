@@ -2,6 +2,24 @@ import typing
 from parse_input import Client
 
 
+def optimize_filtering_clients(clients):
+    totals = []
+    max_total = 0
+    max_i, max_j = 0, 0
+    for i in range(0, 10):
+        totals.append([])
+        for j in range(0, 10):
+            ingredients = get_full_ingredients_list(clients, i, j)
+            best_ingredients = optimize(clients, ingredients)
+            total = evalutate_clients(best_ingredients, clients)
+            totals[i].append(total)
+            if total > max_total:
+                max_total = total
+                max_i, max_j = i, j
+
+    return totals, max_i, max_j
+
+
 def optimize(clients, ingredients):
     """ Return list of ingredients to go on pizza. """
 
@@ -62,3 +80,27 @@ def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], pa
         print(f'Happy clients: {total} / {len(clients)}')
 
     return total
+
+
+def get_full_ingredients_list(clients: typing.List[Client], fussiness_likes=1e9, fussiness_dislikes=1e9):
+    ingredients = dict()  # Each ingredients total likes and dislikes across all clients
+
+    # Store all unique ingredients, and their total likes / dislikes
+    # ingredients will store a list with two elements [liked total, disliked total]
+
+    # Don't try and cater to fussy eaters
+    for c in clients:
+        if c.n_likes < fussiness_likes:
+            for liked in c.likes:
+                # if ingredient is not in dictionary, start a list with [zero likes, zero dislikes]
+                # otherwise, get the list of [total likes, total, dislikes]
+                n = ingredients.get(liked, [0, 0])
+                # increment likes by 1 for this entry
+                ingredients[liked] = [n[0] + 1, n[1]]
+
+        if c.n_dislikes < fussiness_dislikes:
+            for disliked in c.dislikes:
+                n = ingredients.get(disliked, [0, 0])
+                ingredients[disliked] = [n[0], n[1] + 1]
+
+    return ingredients

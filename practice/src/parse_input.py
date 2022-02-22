@@ -6,7 +6,6 @@ def parse_input_file(path):
         lines = [l.rstrip('\n') for l in f.readlines()]
 
     clients = []  # Each clients individual likes and dislikes
-    ingredients = dict()  # Each ingredients total likes and dislikes across all clients
 
     num_clients, lines = int(lines[0]), lines[1:]
     for idx in range(0, num_clients):
@@ -23,19 +22,7 @@ def parse_input_file(path):
         )
         clients.append(c)
 
-        # Store all unique ingredients, and their total likes / dislikes
-        # ingredients will store a list with two elements [liked total, disliked total]
-        for liked in likes:
-            # if ingredient is not in dictionary, start a list with [zero likes, zero dislikes]
-            # otherwise, get the list of [total likes, total, dislikes]
-            n = ingredients.get(liked, [0, 0])
-            # increment likes by 1 for this entry
-            ingredients[liked] = [n[0] + 1, n[1]]
-        for disliked in dislikes:
-            n = ingredients.get(disliked, [0, 0])
-            ingredients[disliked] = [n[0], n[1] + 1]
-
-    return clients, ingredients
+    return clients
 
 
 class Client:
