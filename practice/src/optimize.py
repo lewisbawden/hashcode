@@ -5,7 +5,7 @@ from parse_input import Client
 def optimize(clients, ingredients):
     """ Return list of ingredients to go on pizza. """
 
-    out = list()
+    best_ingredients = list()
     scores = list()  # Some function of likes / dislikes for each ingredient
     # TODO: see if applying -1 or 0 weight to each of these improves score on the difficult examples
     wl, wd = 1, 1  # Weight given to likes / dislikes
@@ -14,35 +14,32 @@ def optimize(clients, ingredients):
         score = (nl*wl - nd*wd)  # sum of likes, minus sum of dislikes
         if nd == 0:
             # Always add ingredients with no dislikes, and sort to back of the list
-            out.append(ing)
+            best_ingredients.append(ing)
             score *= -len(clients)
         scores.append((ing, score))
 
     # Sort ingredients by popularity score
     scores = sorted(scores, key=lambda s: s[1], reverse=True)
-    sorted_ings = [i for i, s in scores]
+    sorted_ingredients = [i for i, s in scores]
 
     # Optimise toppings: Binary search for best cut off of ingredients to take
     # Start by taking all ingredients, then half - if it improves, subtract a quarter more ingredients, if not, add a quarter
     # Initialise the default or first values
-    test = out
+    test = best_ingredients
     prev_total = 0
-    lower = len(scores) - len(out)
-    prev_lower = lower * 2
+    cutoff_lower = len(scores) - len(best_ingredients)
+    prev_cutoff_lower = cutoff_lower * 2
     diff = 1e99
     while abs(diff) > 2:
-        test = out + sorted_ings[0: int(lower)]
+        test = best_ingredients + sorted_ingredients[0: int(cutoff_lower)]
         total = evalutate_clients(test, clients)
-        diff = (prev_lower - lower) / 2
-        prev_lower = lower
+        diff = (prev_cutoff_lower - cutoff_lower) / 2
+        prev_cutoff_lower = cutoff_lower
         if total >= prev_total:
-            lower -= diff
+            cutoff_lower -= diff
         else:
-            lower += diff * 2
+            cutoff_lower += diff * 2  # TODO: Check if this '* 2' does make sure all values skipped over are covered
         prev_total = total
-
-    # TODO: try same procedure on the other limit
-    #  (current limits are from [0: 'lower'], but it is assumed it is always best to take the most popular ingredients - that might not always be true)
 
     # TODO: try one-by-one (or a smarter way) adding ingredients that where not added and/or removing ingredients that were added in the final topping choice
     #  (instead of just taking a continuous set from [0: 'lower'])
