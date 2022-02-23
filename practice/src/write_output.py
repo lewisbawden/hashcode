@@ -9,6 +9,6 @@ def write_output_file(out, name):
 
 def zip_source(root):
     files = glob(rf'{root}/**/*.py', recursive=True)
-    with zipfile.ZipFile(rf'{root}/{root}.zip', 'w') as z:
+    with zipfile.ZipFile(rf'{root}/out/source.zip', 'w') as z:
         for f in files:
             z.write(f)
