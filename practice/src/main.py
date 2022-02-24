@@ -10,12 +10,14 @@ from write_output import write_output_file, zip_source
 def run_one_problem(path):
     print()
     t0 = time.time()
+
     clients = parse_input_file(path)
     totals, i, j = optimize_filtering_clients(clients)
     ingredients = get_full_ingredients_list(clients, i, j)
     out = optimize(clients, ingredients)
     evalutate_clients(out, clients, path, True)
     write_output_file(out, os.path.basename(path))
+
     print(f'Total Time: {time.time() - t0}')
 
 
