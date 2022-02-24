@@ -11,8 +11,8 @@ def run_one_problem(path):
     print()
     t0 = time.time()
 
-    peeps, projects = parse_input_file(path)
-    out = optimize(peeps, projects)
+    peeps, projects, skill_types = parse_input_file(path)
+    out = optimize(peeps, projects, skill_types)
     write_output_file(out, os.path.basename(path))
 
     print(f'Total Time: {time.time() - t0}')

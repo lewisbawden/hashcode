@@ -2,18 +2,24 @@ import typing
 from parse_input import Person, Project
 
 
-def optimize(peeps: typing.List[Project], projects: typing.List[Project]):
-    out = []
+def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_types: set):
 
-    # Sort projects from shortest bbd to longest bbd
+    # Sort projects from shortest wd*days + wb*bbd to longest wd*days + wb*bbd
 
-    # Create lists for each skill, fill it with each person with that skil
+    # Create lists for each skill, fill it with each person with that skill
+    skill_dict = {s: [] for s in skill_types}
+
+    for peep in peeps:
+        # Loop over skills a peep has, add them to the list if they have that skill
+        for skill in peep.skill.keys():
+            skill_dict[skill].append(peep)
 
     # Sort skill list from lowest to highest
-
+    for s in skill_types:
+        skill_dict[s] = sorted(skill_dict[s], lambda p: p.skill[s])
+        
+    out = []
     # Loop over projects
-        # Take first eligible person from skill required list
-
-    # Handle days somehow?
+    # Take first eligible person from skill required list
 
     return out
