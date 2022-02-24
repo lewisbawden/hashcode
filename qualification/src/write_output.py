@@ -3,7 +3,7 @@ from glob import glob
 
 
 def write_output_file(out, name):
-    with open(rf'practice/out/{name[0]}.txt', 'w') as f:
+    with open(rf'qualification/out/{name[0]}.txt', 'w') as f:
         f.write(f'{len(out)} {" ".join(out)}')
 
 
