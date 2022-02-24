@@ -19,10 +19,16 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
 
     # Sort skill list from lowest to highest
     for s in skill_types:
-        skill_dict[s] = sorted(skill_dict[s], lambda p: p.skill[s])
+        skill_dict[s] = sorted(skill_dict[s], key=lambda p: p.skill[s])
         
     out = []
     # Loop over projects
-    # Take first eligible person from skill required list
+    for project in projects:
+        # Loop over skills in project
+        for req_skill, req_level in project.skill.items():
+            # Take first eligible person from skill required list
+            for peep in skill_dict[req_skill]:
+                if peep.skill[req_skill] >= req_level:
+                    skill_dict[req_skill].pop(peep)
 
     return out
