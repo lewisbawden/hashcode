@@ -29,10 +29,10 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
         for req_skill, req_level in project.skill.items():
             # Take first eligible person from skill required list
             for peep in skill_dict[req_skill]:
-                if peep.skill[req_skill] >= req_level:  # no learning / mentoring
+                if peep.skill[req_skill] >= req_level and peep.nname not in project_plan[1]:  # no learning / mentoring
                     project_plan[1].append(peep.nname)  # no handling of days remaining
                     break
-        if len(project_plan[1]) > 1:
+        if len(project_plan[1]) == project.roles:
             out.append(project_plan)
 
     return out
