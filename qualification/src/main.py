@@ -15,7 +15,7 @@ def run_one_problem(path):
     out = optimize(peeps, projects, skill_types)
     write_output_file(out, os.path.basename(path))
 
-    print(f'[{os.path.basename(path)}]\tTotal Time:\t{time.time() - t0}')
+    print(f'[{os.path.basename(path):30s}]\tTotal Time:\t{time.time() - t0:.3f}s')
 
 
 if __name__ == '__main__':
