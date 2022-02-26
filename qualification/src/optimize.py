@@ -5,6 +5,7 @@ from parse_input import Person, Project
 def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_types: set):
 
     # Sort projects from shortest wd*days + wb*bbd to longest wd*days + wb*bbd
+    # todo: include score
     wd=2
     wb=1
     projects_sorted = sorted(projects, key=lambda p: wd*p.days+wb*p.bbd)

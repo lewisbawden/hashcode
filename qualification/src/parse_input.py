@@ -16,7 +16,7 @@ def parse_input_file(path):
     for ppeeps in range(n_peeps):
         name = lines[ii].split()[0]
         n_skills = int(lines[ii].split()[1])
-        thename = Person(name, n_skills)
+        thename = Person(name, n_skills, 0)
 
         for ss in range(n_skills):
             thisskill=lines[ii+ss+1].split()[0]
@@ -48,10 +48,11 @@ def parse_input_file(path):
 
 
 class Person:
-    def __init__(self, nname, n_skills):
+    def __init__(self, nname, n_skills, freeday):
         self.nname = nname
         self.n_skills = n_skills
         self.skill = {}
+        self.freeday = freeday
 
     def __repr__(self):
         return f'{self.__dict__}'
