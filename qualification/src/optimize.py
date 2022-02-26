@@ -9,7 +9,7 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
     wb=1
     ws=-1
     wsk_tot=0
-    projects_sorted = sorted(projects, key=lambda p: wd*p.days+wb*p.bbd+ws*p.tot_skilllev)
+    projects_sorted = sorted(projects, key=lambda p: wd*p.days+wb*p.bbd+ws*p.score+wsk_tot*p.tot_skilllev)
 
     # Create lists for each skill, fill it with each person with that skill
     skill_dict = {s: [] for s in skill_types}
@@ -39,19 +39,25 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
                     continue
 
                 # Can directly contribute to project with current skill level and levels up skill
-                if peep.skill[req_skill] == req_level:
-                    project_plan[1].append(peep.nname)
-                    break
+                if project.bbd > project.days + peep.freeday:
+                    if peep.skill[req_skill] == req_level:
+                        project_plan[1].append(peep.nname)
+                        #peep.skill[req_skill]+=1 after project
+                        peep.freeday+=project.days #add busy days
+                        break
 
-                # Can directly contribute to project with current skill level but does not level up
-                if peep.skill[req_skill] > req_level:
-                    project_plan[1].append(peep.nname)
-                    break
+                    # Can directly contribute to project with current skill level but does not level up
+                    if peep.skill[req_skill] > req_level:
+                        project_plan[1].append(peep.nname)
+                        peep.freeday+=project.days #add busy days
+                        break
 
-                # Can contribute but only through mentoring
-                elif peep.skill[req_skill] == req_level - 1 and any(p.skill.get(req_skill, 0) > req_level for p in project_plan[1]):
-                    project_plan[1].append(peep.nname)
-                    peep.skill[req_skill] += 1
+                    # Can contribute but only through mentoring
+                    elif peep.skill[req_skill] == req_level - 1 and any(p.skill.get(req_skill, 0) > req_level for p in project_plan[1]):
+                        project_plan[1].append(peep.nname)
+                        peep.skill[req_skill] += 1  # improve through mentoring
+                        peep.freeday+=project.days #add busy days
+
 
         if len(project_plan[1]) == project.roles:
             out.append(project_plan)
