@@ -39,6 +39,7 @@ def parse_input_file(path):
             thisskill=lines[ii+ss+1].split()[0]
             thisskilllev = int(lines[ii + ss+1].split()[1])
             thename.skill[f'{thisskill}']=thisskilllev
+            thename.tot_skilllev +=thisskilllev
 
         projects.append(thename)
         ii+=n_roles+1
@@ -66,6 +67,7 @@ class Project:
         self.bbd = bbd
         self.roles = roles
 
+        self.tot_skilllev = 0
         self.skill = {}
 
     def __repr__(self):
