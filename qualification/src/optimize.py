@@ -24,7 +24,8 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
         skill_dict[s] = sorted(skill_dict[s], key=lambda p: p.skill[s])
 
     # Also sort list of all peeps
-        
+    peeps = sorted(peeps, key=lambda p: p.tot_skilllev)
+
     out = []
     # Loop over projects
     for project in projects_sorted:
@@ -57,7 +58,6 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
                         project_plan[1].append(peep.nname)
                         peep.skill[req_skill] += 1  # improve through mentoring
                         peep.freeday+=project.days #add busy days
-
 
         if len(project_plan[1]) == project.roles:
             out.append(project_plan)
