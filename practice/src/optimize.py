@@ -44,20 +44,19 @@ def optimize(clients, ingredients):
     # Start by taking all ingredients, then half - if it improves, subtract a quarter more ingredients, if not, add a quarter
     # Initialise the default or first values
     test = best_ingredients
-    prev_total = 0
-    cutoff_lower = len(scores) - len(best_ingredients)
-    prev_cutoff_lower = cutoff_lower * 2
-    diff = 1e99
-    while abs(diff) > 2:
-        test = best_ingredients + sorted_ingredients[0: int(cutoff_lower)]
-        total = evalutate_clients(test, clients)
-        diff = (prev_cutoff_lower - cutoff_lower) / 2
-        prev_cutoff_lower = cutoff_lower
-        if total >= prev_total:
-            cutoff_lower -= diff
-        else:
-            cutoff_lower += diff * 2  # TODO: Check if this '* 2' does make sure all values skipped over are covered
-        prev_total = total
+    n_tries = 5
+    if len(sorted_ingredients) < n_tries:
+        return test
+    else:
+        while True:
+            minarg = 1
+            maxarg = len(scores) - len(best_ingredients) - 1
+            tries = [i for i in range(int(minarg), int(maxarg), n_tries)]
+            totals = [evalutate_clients(best_ingredients + sorted_ingredients[0: ti], clients) for ti in tries]
+            maxtotal = max(totals)
+            for i, ti in enumerate(reversed(totals)):
+                if maxtotal ==
+
 
     # TODO: try one-by-one (or a smarter way) adding ingredients that where not added and/or removing ingredients that were added in the final topping choice
     #  (instead of just taking a continuous set from [0: 'lower'])

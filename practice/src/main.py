@@ -1,6 +1,7 @@
 import os
 import time
 from glob import glob
+from multiprocessing import Pool
 
 from parse_input import parse_input_file
 from optimize import optimize, optimize_filtering_clients, evalutate_clients, get_full_ingredients_list
@@ -25,7 +26,11 @@ def run_one_problem(path):
 if __name__ == '__main__':
     input_files = glob(r'practice/inp/*.txt')
 
-    for f in input_files:
-        run_one_problem(f)
+    with Pool(len(input_files)) as pool:
+        procs = []
+        for f in input_files:
+            procs.append(pool.apply_async(run_one_problem, (f,)))
+        for p in procs:
+            p.get()
 
     zip_source('practice')
