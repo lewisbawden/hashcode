@@ -42,7 +42,7 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
                 if project.bbd > project.days + peep.freeday:
                     if peep.skill[req_skill] == req_level:
                         project_plan[1].append(peep.nname)
-                        #peep.skill[req_skill]+=1 after project
+                        peep.skill[req_skill]+=1
                         peep.freeday+=project.days #add busy days
                         break
 
