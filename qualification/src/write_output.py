@@ -5,10 +5,10 @@ from glob import glob
 
 def write_output_file(out, name):
     with open(rf'qualification/out/{name[0]}.txt', 'w') as f:
-        f.write(f'{len(out)}')
+        f.write(f'{len(out)}\n')
         for pprojects in out:
-            f.write(f'{pprojects[0]}')
-            f.write(f'{" ".join(pprojects[1])}')
+            f.write(f'{pprojects[0]}\n')
+            f.write(f'{" ".join(pprojects[1])}\n')
 
 
 def zip_source(root):
