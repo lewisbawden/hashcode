@@ -22,11 +22,14 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
     # Sort skill list from lowest to highest
     for s in skill_types:
         skill_dict[s] = sorted(skill_dict[s], key=lambda p: p.skill[s])
+
+    # Also sort list of all peeps
         
     out = []
     # Loop over projects
     for project in projects_sorted:
         # Loop over skills in project
+        # Name of the [the name of the project, [names of the peeps]]
         project_plan = [project.nname, []]
         for req_skill, req_level in project.skill.items():
             # Take first eligible person from skill required list
@@ -48,6 +51,7 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
                 # Can contribute but only through mentoring
                 elif peep.skill[req_skill] == req_level - 1 and any(p.skill.get(req_skill, 0) > req_level for p in project_plan[1]):
                     project_plan[1].append(peep.nname)
+                    peep.skill[req_skill] += 1
 
         if len(project_plan[1]) == project.roles:
             out.append(project_plan)
