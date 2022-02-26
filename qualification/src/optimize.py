@@ -31,9 +31,24 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
         for req_skill, req_level in project.skill.items():
             # Take first eligible person from skill required list
             for peep in skill_dict[req_skill]:
-                if peep.skill[req_skill] >= req_level and peep.nname not in project_plan[1]:  # no learning / mentoring
-                    project_plan[1].append(peep.nname)  # no handling of days remaining
+                # Cannot contribute, they already are in the project
+                if peep.nname in project_plan[1]:
+                    continue
+
+                # Can directly contribute to project with current skill level and levels up skill
+                if peep.skill[req_skill] == req_level:
+                    project_plan[1].append(peep.nname)
                     break
+
+                # Can directly contribute to project with current skill level but does not level up
+                if peep.skill[req_skill] > req_level:
+                    project_plan[1].append(peep.nname)
+                    break
+
+                # Can contribute but only through mentoring
+                elif peep.skill[req_skill] == req_level - 1 and any(p.skill.get(req_skill, 0) > req_level for p in project_plan[1]):
+                    project_plan[1].append(peep.nname)
+
         if len(project_plan[1]) == project.roles:
             out.append(project_plan)
 
