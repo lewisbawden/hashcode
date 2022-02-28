@@ -15,7 +15,7 @@ def run_one_problem(path):
     clients = parse_input_file(path)
     totals, i, j = optimize_filtering_clients(clients)
     ingredients = get_full_ingredients_list(clients, i, j)
-    out = optimize(clients, ingredients)
+    out = optimize(clients, ingredients, True)
     evalutate_clients(out, clients, path, True)
     write_output_file(out, os.path.basename(path))
 

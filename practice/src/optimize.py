@@ -1,3 +1,4 @@
+import random
 import typing
 from parse_input import Client
 
@@ -20,7 +21,7 @@ def optimize_filtering_clients(clients):
     return totals, max_i, max_j
 
 
-def optimize(clients, ingredients):
+def optimize(clients, ingredients, do_genetic=False):
     """ Return list of ingredients to go on pizza. """
 
     best_ingredients = list()
@@ -45,23 +46,61 @@ def optimize(clients, ingredients):
     # Initialise the default or first values
     test = best_ingredients
     n_tries = 5
-    if len(sorted_ingredients) < n_tries:
+    if len(sorted_ingredients) < n_tries * 3:
         return test
     else:
-        while True:
-            minarg = 1
-            maxarg = len(scores) - len(best_ingredients) - 1
-            tries = [i for i in range(int(minarg), int(maxarg), n_tries)]
+        minarg = 1
+        maxarg = len(scores) - len(best_ingredients) - 1
+        diff = int((maxarg - minarg - 1) / (n_tries - 1))
+        maxloc = maxarg
+        while diff > 1.5:
+            tries = [i for i in range(int(minarg), int(maxarg), diff)]
             totals = [evalutate_clients(best_ingredients + sorted_ingredients[0: ti], clients) for ti in tries]
             maxtotal = max(totals)
             for i, ti in enumerate(reversed(totals)):
-                if maxtotal ==
+                if maxtotal == ti and i == 0:
+                    maxloc = tries[n_tries - 1 - i]
+                    minarg = tries[n_tries - 1 - i - 2]
+                    maxarg = tries[n_tries - 1 - i]
+                    break
+                elif maxtotal == ti:
+                    maxloc = tries[n_tries - 1 - i]
+                    minarg = tries[n_tries - 1 - i - 1]
+                    maxarg = tries[n_tries - 1 - i + 1]
+                    break
+            diff = int((maxarg - minarg - 1) / (n_tries - 1))
 
-
-    # TODO: try one-by-one (or a smarter way) adding ingredients that where not added and/or removing ingredients that were added in the final topping choice
-    #  (instead of just taking a continuous set from [0: 'lower'])
+        test = best_ingredients + sorted_ingredients[0: maxloc]
+        if do_genetic:
+            test = mutate(sorted_ingredients, maxloc, clients)
 
     return test
+
+
+def mutate(out, maxloc, clients):
+    n_mutations = 10
+    converged = False
+    count = 0
+    threshold = 150
+    max_count = 2000
+    best_score = 0
+    best_choice = [threshold * 0.5] * maxloc + [threshold * 3] * (len(out) - maxloc)
+    fluct = 8
+    while not converged:
+        choices = [[best_choice[i] + random.randint(int(-fluct + (count / max_count) * fluct), int(fluct - (count / max_count) * fluct)) for i in range(len(out))] for j in range(n_mutations)]
+        tests = [[out[j] for j in range(len(out)) if choices[i][j] < threshold] for i in range(n_mutations)]
+        totals = [evalutate_clients(tests[i], clients) for i in range(n_mutations)]
+        maxtot = max(totals)
+        for i in range(n_mutations):
+            if totals[i] == maxtot:
+                if maxtot > best_score:
+                    best_choice = choices[i]
+                break
+        if count == max_count:
+            converged = True
+            out = tests[i]
+        count += 1
+    return out
 
 
 def evalutate_clients(ingredients_choice: list, clients: typing.List[Client], path='', do_print=False):

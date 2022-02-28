@@ -10,7 +10,6 @@ def parse_input_file(path):
     n_peeps = int(lines[0].split()[0])
     n_projects = int(lines[0].split()[1])
     skill_types=set()
-    #skill_types.add('skill')
 
     ii = 1
     for ppeeps in range(n_peeps):
@@ -23,7 +22,7 @@ def parse_input_file(path):
             skill_types.add(f'{thisskill}')
             thisskilllev = int(lines[ii + ss+1].split()[1])
             thename.skill[f'{thisskill}']=thisskilllev
-
+            thename.tot_skilllev += thisskilllev
         peeps.append(thename)
         ii+=n_skills+1
 
@@ -39,6 +38,7 @@ def parse_input_file(path):
             thisskill=lines[ii+ss+1].split()[0]
             thisskilllev = int(lines[ii + ss+1].split()[1])
             thename.skill[f'{thisskill}']=thisskilllev
+            thename.skill_list.append(thisskill)
             thename.tot_skilllev +=thisskilllev
 
         projects.append(thename)
@@ -55,6 +55,7 @@ class Person:
 
         self.skill = {}
         self.freeday = 0
+        self.tot_skilllev = 0
 
     def __repr__(self):
         return f'{self.__dict__}'
@@ -70,6 +71,8 @@ class Project:
 
         self.tot_skilllev = 0
         self.skill = {}
+        self.skill_list = []
+        self.staffed = False
 
     def __repr__(self):
         return f'{self.__dict__}'

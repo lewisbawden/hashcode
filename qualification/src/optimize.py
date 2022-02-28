@@ -5,10 +5,10 @@ from parse_input import Person, Project
 def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_types: set):
 
     # Sort projects from shortest wd*days + wb*bbd to longest wd*days + wb*bbd
-    wd=2
+    wd=4
     wb=1
-    ws=-1
-    wsk_tot=0
+    ws=-2
+    wsk_tot=1
     projects_sorted = sorted(projects, key=lambda p: wd*p.days+wb*p.bbd+ws*p.score+wsk_tot*p.tot_skilllev)
 
     # Create lists for each skill, fill it with each person with that skill
@@ -27,39 +27,49 @@ def optimize(peeps: typing.List[Person], projects: typing.List[Project], skill_t
     peeps = sorted(peeps, key=lambda p: p.tot_skilllev)
 
     out = []
-    # Loop over projects
-    for project in projects_sorted:
-        # Loop over skills in project
-        # Name of the [the name of the project, [names of the peeps]]
-        project_plan = [project.nname, []]
-        for req_skill, req_level in project.skill.items():
-            # Take first eligible person from skill required list
-            for peep in skill_dict[req_skill]:
-                # Cannot contribute, they already are in the project
-                if peep.nname in project_plan[1]:
-                    continue
+    for i in range(4):
+        # Loop over projects
+        for project in projects_sorted:
+            if project.staffed:
+                continue
+            # Loop over skills in project
+            # Name of the [the name of the project, [peeps, ...]]
+            project_plan = [project.nname, []]
+            level_increase = []
+            for req_skill, req_level in project.skill.items():
+                # Take first eligible person from skill required list
+                for peep in sorted(peeps, key=lambda p: p.tot_skilllev):
+                    # Cannot contribute, they already are in the project
+                    if peep in project_plan[1]:
+                        continue
 
-                # Can directly contribute to project with current skill level and levels up skill
-                if project.bbd > project.days + peep.freeday:
-                    if peep.skill[req_skill] == req_level:
-                        project_plan[1].append(peep.nname)
-                        peep.skill[req_skill]+=1
-                        peep.freeday+=project.days #add busy days
-                        break
+                    # Can directly contribute to project with current skill level and levels up skill
+                    if project.bbd > project.days + peep.freeday:
+                        if peep.skill.get(req_skill, 0) == req_level:
+                            project_plan[1].append(peep)
+                            level_increase.append(1)
+                            break
+                        if peep.skill.get(req_skill, 0) > req_level:
+                            project_plan[1].append(peep)
+                            level_increase.append(0)
+                            break
 
-                    # Can directly contribute to project with current skill level but does not level up
-                    if peep.skill[req_skill] > req_level:
-                        project_plan[1].append(peep.nname)
-                        peep.freeday+=project.days #add busy days
-                        break
+                        # Can contribute but only through mentoring
+                        if peep.skill.get(req_skill, 0) == req_level - 1 and any(p.skill.get(req_skill, 0) > req_level for p in project_plan[1]):
+                            project_plan[1].append(peep)
+                            level_increase.append(1)
+                            break
 
-                    # Can contribute but only through mentoring
-                    elif peep.skill[req_skill] == req_level - 1 and any(p.skill.get(req_skill, 0) > req_level for p in project_plan[1]):
-                        project_plan[1].append(peep.nname)
-                        peep.skill[req_skill] += 1  # improve through mentoring
-                        peep.freeday+=project.days #add busy days
+            if len(project_plan[1]) == project.roles:
+                last_peep_free = max(project_plan[1], key=lambda p: p.freeday)
+                max_freeday = last_peep_free.freeday
+                for i in range(project.roles):
+                    level = project_plan[1][i].skill.get(project.skill_list[i], 0) + level_increase[i]
+                    project_plan[1][i].skill[project.skill_list[i]] = level
+                    project_plan[1][i].tot_skilllev += level_increase[i]
+                    project_plan[1][i].freeday = max_freeday + project.days
+                out.append([project.nname, [p.nname for p in project_plan[1]]])
+                project.staffed = True
 
-        if len(project_plan[1]) == project.roles:
-            out.append(project_plan)
 
     return out
