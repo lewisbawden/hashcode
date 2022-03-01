@@ -1,4 +1,6 @@
+import os.path
 import random
+import time
 import typing
 from parse_input import Client
 
@@ -11,7 +13,7 @@ def optimize_filtering_clients(clients):
         totals.append([])
         for j in range(0, 10):
             ingredients = get_full_ingredients_list(clients, i, j)
-            best_ingredients = optimize(clients, ingredients)
+            best_ingredients = optimize(clients, ingredients, '', False)
             total = evalutate_clients(best_ingredients, clients)
             totals[i].append(total)
             if total > max_total:
@@ -21,7 +23,7 @@ def optimize_filtering_clients(clients):
     return totals, max_i, max_j
 
 
-def optimize(clients, ingredients, do_genetic=False):
+def optimize(clients, ingredients, path, do_genetic=False):
     """ Return list of ingredients to go on pizza. """
 
     best_ingredients = list()
@@ -34,7 +36,7 @@ def optimize(clients, ingredients, do_genetic=False):
         if nd == 0:
             # Always add ingredients with no dislikes, and sort to back of the list
             best_ingredients.append(ing)
-            score *= -len(clients)
+            score *= -2*len(clients)
         scores.append((ing, score))
 
     # Sort ingredients by popularity score
@@ -45,7 +47,7 @@ def optimize(clients, ingredients, do_genetic=False):
     # Start by taking all ingredients, then half - if it improves, subtract a quarter more ingredients, if not, add a quarter
     # Initialise the default or first values
     test = best_ingredients
-    n_tries = 5
+    n_tries = 4
     if len(sorted_ingredients) < n_tries * 3:
         return test
     else:
@@ -72,30 +74,40 @@ def optimize(clients, ingredients, do_genetic=False):
 
         test = best_ingredients + sorted_ingredients[0: maxloc]
         if do_genetic:
-            test = mutate(sorted_ingredients, maxloc, clients)
+            test = mutate(best_ingredients, sorted_ingredients[0: len(sorted_ingredients) - len(best_ingredients)], maxloc, clients, os.path.basename(path)[0])
 
     return test
 
 
-def mutate(out, maxloc, clients):
-    n_mutations = 10
+def mutate(not_disliked, out, maxloc, clients, problem):
+    n_mutations = 7
     converged = False
     count = 0
-    threshold = 150
-    max_count = 2000
-    best_score = 0
-    best_choice = [threshold * 0.5] * maxloc + [threshold * 3] * (len(out) - maxloc)
-    fluct = 8
+    threshold = 100
+    max_count = 10000
+    best_score = evalutate_clients(out[0:maxloc] + not_disliked, clients)
+    a, b = 2, 2
+    best_choice = [threshold * 0.75 * ((1 - (1 / a)) + (i / (maxloc * a))) for i in range(maxloc)] + [threshold * 1.25 * (1 + (i / b * (len(out) - maxloc))) for i in range(len(out) - maxloc)]
+    fluct = 50
+    fp = rf'practice/out/data_{problem}.csv'
+    t0 = time.time()
+    with open(fp, 'w') as f:
+        f.write('count,time,best_now,best_ever\n')
+
     while not converged:
         choices = [[best_choice[i] + random.randint(int(-fluct + (count / max_count) * fluct), int(fluct - (count / max_count) * fluct)) for i in range(len(out))] for j in range(n_mutations)]
-        tests = [[out[j] for j in range(len(out)) if choices[i][j] < threshold] for i in range(n_mutations)]
+        tests = [[out[j] for j in range(len(out)) if choices[i][j] < threshold] + not_disliked for i in range(n_mutations)]
         totals = [evalutate_clients(tests[i], clients) for i in range(n_mutations)]
         maxtot = max(totals)
         for i in range(n_mutations):
             if totals[i] == maxtot:
                 if maxtot > best_score:
                     best_choice = choices[i]
+                    best_score = maxtot
                 break
+        line = f'{count},{time.time()-t0},{maxtot},{best_score}\n'
+        with open(fp, 'a+') as f:
+            f.write(line)
         if count == max_count:
             converged = True
             out = tests[i]
