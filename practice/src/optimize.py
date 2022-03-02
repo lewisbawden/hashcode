@@ -84,18 +84,19 @@ def mutate(not_disliked, out, maxloc, clients, problem):
     converged = False
     count = 0
     threshold = 100
-    max_count = 10000
+    max_count = 100000
     best_score = evalutate_clients(out[0:maxloc] + not_disliked, clients)
     a, b = 2, 2
-    best_choice = [threshold * 0.75 * ((1 - (1 / a)) + (i / (maxloc * a))) for i in range(maxloc)] + [threshold * 1.25 * (1 + (i / b * (len(out) - maxloc))) for i in range(len(out) - maxloc)]
-    fluct = 50
+    best_choice = [threshold * 0.95 * ((1 - (1 / a)) + (i / (maxloc * a))) for i in range(maxloc)] + [threshold * 1.05 * (1 + (i / b * (len(out) - maxloc))) for i in range(len(out) - maxloc)]
+    fluct = 20
     fp = rf'practice/out/data_{problem}.csv'
     t0 = time.time()
     with open(fp, 'w') as f:
-        f.write('count,time,best_now,best_ever\n')
+        f.write('count,time,best_now,best_ever,fluct\n')
 
+    alpha = 0.9
     while not converged:
-        choices = [[best_choice[i] + random.randint(int(-fluct + (count / max_count) * fluct), int(fluct - (count / max_count) * fluct)) for i in range(len(out))] for j in range(n_mutations)]
+        choices = [[best_choice[i] + random.randint(int(-fluct), int(fluct)) for i in range(len(out))] for j in range(n_mutations)]
         tests = [[out[j] for j in range(len(out)) if choices[i][j] < threshold] + not_disliked for i in range(n_mutations)]
         totals = [evalutate_clients(tests[i], clients) for i in range(n_mutations)]
         maxtot = max(totals)
@@ -104,11 +105,12 @@ def mutate(not_disliked, out, maxloc, clients, problem):
                 if maxtot > best_score:
                     best_choice = choices[i]
                     best_score = maxtot
+                    fluct *= alpha
                 break
-        line = f'{count},{time.time()-t0},{maxtot},{best_score}\n'
+        line = f'{count},{time.time()-t0},{maxtot},{best_score},{fluct}\n'
         with open(fp, 'a+') as f:
             f.write(line)
-        if count == max_count:
+        if count == max_count or fluct < 2:
             converged = True
             out = tests[i]
         count += 1
